@@ -70,11 +70,11 @@ Free for personal and commercial use under the CCA 3.0 license (html5up.net/lice
     
         <span>
     <h1>
-        <a href="https://xianxuan.github.io/post/mysql/first/">First</a>
+        <a href="https://xianxuan.github.io/post/mysql/mysql%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95%E4%B9%8B%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E5%92%8C%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/">Mysql技术内幕之体系结构和存储引擎</a>
     </h1>
 
     <i class="fa fa-calendar"></i>&nbsp;&nbsp;
-<time datetime="2018-12-03 18:16:07 &#43;0800 CST">2018-12-03</time>&nbsp;&nbsp;
+<time datetime="2018-12-05 10:16:03 &#43;0800 CST">2018-12-05</time>&nbsp;&nbsp;
 
 
 
@@ -84,37 +84,28 @@ Free for personal and commercial use under the CCA 3.0 license (html5up.net/lice
 
 </span>
 
-<p></p>
+<p>数据库和实例的定义  数据库:物理操作系统文件或其他形式文件类型的集合。在MySQL数据库中，数据库文件可以是fm、MYD、MYI、ibd 结尾的文件。当使用NDB引擎时，数据库的文件可能不是操作系统上的文件，而是存放于内存之中的文件，但是定义仍然不变。
+ 实例: MySQL数据库由后台线程以及一个共享内存区组成。共享内存可以被运行的后台线程所共享。需要牢记的是，数据库实例才是真正用于操作数据库文件的。
+ 区别：这两个词有时可以互换使用，不过两者的概念完全不同。在MySQL数据库中，实例与数据库的关通常系是- &ndash;对应的，即-一个实例对应-一个数据库，-一个数据库对应一个实例。但是，在集群情况下可能存在一个数据库被多个数据实例使用的情况。
+ mysql是单进程多线程架构的数据库，和sqlserver类似，和oracle不同（oracle的windows版本也是单进程多线程架构）,mysql数据库实例就是一个进程
+ mysql数据库会读取配置文件，配置文件存放位置可以通过以下代码查看：
+命令：mysql --help | grep my.cnf 输出：order of preference, my.cnf, $MYSQL_ _TCP_ PORT, /etc/my.cnf /etc/mysql/my.cnf /usr/ local/mysql/etc/my.cnf ~/ .my.cnf  可以看到，MySQL 数据库是按/etc/my.cnf→/etc/mysql/my.cnf - + /usr/local/mysqletc/my.cnf→~ /.my.cnf的顺序读取配置文件的。可能有读者会问:“如果几个配置文件中都有同一个参数，MySQL数据库以哪个配置文件为准?”答案很简单，MySQL 数据库会以读取到的最后一个配置文件中的参数为准。
+ 配置文件中有一个参数datadir,该参数指定了数据库所在的路径。在Linux操作系统下默认datadir为/usr/local/mysql/data,用户可以修改该参数，当然也可以使用该路径，不过该路径只是一个指向/opt/mysql_data的目录
+  mysql体系结构  应用程序通过数据库实例来操作数据库。
+  由上图可知，mysql由以下几部分组成：
+ 链接吃组件 管理服务和工具组件 SQL接口组件 查询分析器组件 优化器组件 缓冲（Cache）组件 插件式存储引擎 物理文件   从图中还可以发现，MySQL数据库区别于其他数据库的最重要的一一个特点就是其插件式的表存储引擎。MySQL插件式的存储引擎架构提供了一系列标准的管理和服务支持，这些标准与存储引擎本身无关，可能是每个数据库系统本身都必需的，如SQL分析器和优化器等，而存储引擎是底层物理结构的实现，每个存储引擎开发者可以按照自己的意愿来进行开发。
+ 需要特别注意的是，存储引擎是基于表的，而不是数据库。
+  mysql存储引擎  存储引擎对于开发人员来说是透明的，但是应该深刻的认识到mysql数据库的核心在于存储引擎。  InnoDB存储引擎  InnoDB存储引擎支持事务，其设计目标主要面向在线事务处理(OLTP)的应用。其特点是行锁设计、支持外键，并支持类似于Oracle的非锁定读，即默认读取操作不会产生锁。从MySQL数据库5.</p>
 <hr>
 
     
         <span>
     <h1>
-        <a href="https://xianxuan.github.io/post/second/">Second</a>
+        <a href="https://xianxuan.github.io/post/foo/">Foo</a>
     </h1>
 
     <i class="fa fa-calendar"></i>&nbsp;&nbsp;
-<time datetime="2018-12-03 17:59:35 &#43;0800 CST">2018-12-03</time>&nbsp;&nbsp;
-
-
-
-
-
-
-
-</span>
-
-<p></p>
-<hr>
-
-    
-        <span>
-    <h1>
-        <a href="https://xianxuan.github.io/post/first/">First</a>
-    </h1>
-
-    <i class="fa fa-calendar"></i>&nbsp;&nbsp;
-<time datetime="2018-08-03 13:13:03 &#43;0800 CST">2018-08-03</time>&nbsp;&nbsp;
+<time datetime="2018-08-03 14:31:24 &#43;0800 CST">2018-08-03</time>&nbsp;&nbsp;
 
 
 
