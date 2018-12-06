@@ -111,15 +111,21 @@ Free for personal and commercial use under the CCA 3.0 license (html5up.net/lice
 <li><p>由上图可知，mysql由以下几部分组成：</p>
 
 <ul>
-<li>链接吃组件</li>
-<li>管理服务和工具组件</li>
-<li>SQL接口组件</li>
-<li>查询分析器组件</li>
-<li>优化器组件</li>
-<li>缓冲（Cache）组件</li>
-<li>插件式存储引擎</li>
-<li>物理文件
-<br /></li>
+<li><p>链接吃组件</p></li>
+
+<li><p>管理服务和工具组件</p></li>
+
+<li><p>SQL接口组件</p></li>
+
+<li><p>查询分析器组件</p></li>
+
+<li><p>优化器组件</p></li>
+
+<li><p>缓冲（Cache）组件</p></li>
+
+<li><p>插件式存储引擎</p></li>
+
+<li><p>物理文件</p></li>
 </ul></li>
 
 <li><p>从图中还可以发现，MySQL数据库区别于其他数据库的最重要的一一个特点就是其插件式的表存储引擎。MySQL插件式的存储引擎架构提供了一系列标准的管理和服务支持，这些标准与存储引擎本身无关，可能是每个数据库系统本身都必需的，如SQL分析器和优化器等，而存储引擎是底层物理结构的实现，每个存储引擎开发者可以按照自己的意愿来进行开发。</p></li>
@@ -150,11 +156,10 @@ Free for personal and commercial use under the CCA 3.0 license (html5up.net/lice
 <h3 id="tcp-ip">TCP/IP</h3>
 
 <ul>
-<li>这里需要注意的是，在通过TCP/IP连接到MySQL实例时，MySQL数据库会先检查一张权限视图，用来判断发起请求的客户端IP是否允许连接到MySQL实例。该视图在mysql架构下，表名为user,如下所示:
-<br /></li>
-</ul>
+<li><p>这里需要注意的是，在通过TCP/IP连接到MySQL实例时，MySQL数据库会先检查一张权限视图，用来判断发起请求的客户端IP是否允许连接到MySQL实例。该视图在mysql架构下，表名为user,如下所示:</p>
 
-<pre><code>mysql&gt;USE mysql;
+<pre><code>```
+mysql&gt;USE mysql;
 Database changed
 mysql&gt;SELECT host, user, password FROM user;
 **************************1. row**************************
@@ -174,10 +179,10 @@ host: %
 user: david
 password :
 4 rows in set (0.00 sec)
-</code></pre>
+```
+</code></pre></li>
 
-<ul>
-<li>从这张权限表中可以看到，MySQL允许david这个用户在任何IP段下连接该实例,并且不需要密码。此外，还给出了root用户在各个网段下的访问控制权限。</li>
+<li><p>从这张权限表中可以看到，MySQL允许david这个用户在任何IP段下连接该实例,并且不需要密码。此外，还给出了root用户在各个网段下的访问控制权限。</p></li>
 </ul>
 
 <h3 id="命名管道和共享内存">命名管道和共享内存</h3>
@@ -189,23 +194,23 @@ password :
 <h3 id="unix域套接字">UNIX域套接字</h3>
 
 <ul>
-<li>在Linux和UNIX环境下，还可以使用UNIX域套接字。UNIX域套接字其实不是一个网络协议，所以只能在MySQL客户端和数据库实例在一台服务器上的情况下使用。用户可以在配置文件中指定套接字文件的路径，如&ndash;socket=/tmp/mysql.sock。当数据库实例启动后，用户可以通过下列命令来进行UNIX域套接字文件的查找:
-<br /></li>
-</ul>
+<li><p>在Linux和UNIX环境下，还可以使用UNIX域套接字。UNIX域套接字其实不是一个网络协议，所以只能在MySQL客户端和数据库实例在一台服务器上的情况下使用。用户可以在配置文件中指定套接字文件的路径，如&ndash;socket=/tmp/mysql.sock。当数据库实例启动后，用户可以通过下列命令来进行UNIX域套接字文件的查找:</p>
 
-<pre><code>mysql&gt;SHOW VARIABLES LIKE ' socket' ;
+<pre><code>```
+mysql&gt;SHOW VARIABLES LIKE ' socket' ;
 **************************1. row **************************
 Variable name: socket
         Value: / tmp/mysql . sock 
 1 row in set (0.00 sec)
-</code></pre>
+```
 
-<ul>
-<li>在知道了UNIX域套接字文件的路径后，就可以使用该方式进行连接了，如下所示:</li>
+* 在知道了UNIX域套接字文件的路径后，就可以使用该方式进行连接了，如下所示:
+
+```
+[root@stargazer ~]# mysql -udavid -S / tmp/mysql . sock
+```
+</code></pre></li>
 </ul>
-
-<pre><code>[root@stargazer ~]# mysql -udavid -S / tmp/mysql . sock
-</code></pre>
 
 	</p>
 

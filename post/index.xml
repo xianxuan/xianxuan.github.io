@@ -6,10 +6,28 @@
     <description>Recent content in Posts on </description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 05 Dec 2018 10:16:03 +0800</lastBuildDate>
+    <lastBuildDate>Wed, 05 Dec 2018 13:40:44 +0800</lastBuildDate>
     
 	<atom:link href="https://xianxuan.github.io/post/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Mysql技术内幕之InnoDB存储引擎</title>
+      <link>https://xianxuan.github.io/post/mysql/mysql%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95%E4%B9%8Binnodb%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/</link>
+      <pubDate>Wed, 05 Dec 2018 13:40:44 +0800</pubDate>
+      
+      <guid>https://xianxuan.github.io/post/mysql/mysql%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95%E4%B9%8Binnodb%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/</guid>
+      <description>InnoDB存储引擎概述  第一个完成支持ACID事物的mysql存储引擎。   InnoDB体系架构  后台线程-&amp;gt;InnoDB存储引擎内存池-&amp;gt;文件   后台线程  Master Thread
+ MasterThread是&amp;ndash;个非常核心的后台线程，主要负责将缓冲池中的数据异步刷新到磁盘，保证数据的一-致性，包括脏页的刷新、合并插人缓冲(INSERT BUFFER)、UNDO页的回收等。   IO Thread
+ 在InnoDB存储引擎中大量使用了AIO (Async I0)来处理写IO请求，这样可以极大提高数据库的性能。而IOThread的工作主要是负责这些IO请求的回调(callback)处理。  Purge Thread
+ 事务被提交后，其所使用的undolog可能不再需要，因此需要PurgeThread来回收已经使用并分配的undo页。   Page Cleaner Thread
+ 其作用是将之前版本中脏页的刷新操作都放人到单独的线程中来完成。而其目的是为了减轻原Master Thread的工作及对于用户查询线程的阻塞，进- -步提高InnoDB存储引擎的性能。   内存 缓冲池  缓冲池简单来说就是一块内存区域，通过内存的速度来弥补磁盘速度较慢对数据库性能的影响。
+ 在数据库中进行读取页的操作，首先将从磁盘读到的页存放在缓冲池中，这个过程称为将页“FIX”在缓冲池中。下一次再读相同的页时，首先判断该页是否在缓冲池中。若在缓冲池中，称该页在缓冲池中被命中，直接读取该页。否则，读取磁盘上的页。
+ 对于数据库中页的修改操作，则首先修改在缓冲池中的页，然后再以一定的频率刷新到磁盘上。这里需要注意的是，页从缓冲池刷新回磁盘的操作并不是在每次页发生更新时触发，而是通过- -种称为Checkpoint的机制刷新回磁盘。同样，这也是为了提高数据库的整体性能。
+ 对于InnoDB存储引擎而言，其缓冲池的配置通过参数innodb__buffer_poolsize来设置。可以通过参数innodb buffer_ pool instances 来进行配置，缓冲池实例个数。
+ 具体来看，缓冲池中缓存的数据页类型有:索引页、数据页、undo页、插人缓冲(insertbuffer)、自适应哈希索引(adaptivehashindex)、InnoDB存储的锁信息(lockinfo)、数据字典信息( data dictionary)等。不能简单地认为，缓冲池只是缓存索引页和数据页，它们只是占缓冲池很大的一部分而已。
+  LRU List. Free List FI Flush List  通常来说，数据库中的缓冲池是通过LRU ( Latest Recent Used,最近最少使用)算法来进行管理的。即最频繁使用的页在LRU列表的前端，而最少使用的页在LRU列表的尾端。当缓冲池不能存放新读取到的页时，将首先释放LRU列表中尾端的页。</description>
+    </item>
     
     <item>
       <title>Mysql技术内幕之体系结构和存储引擎</title>
@@ -26,9 +44,15 @@
  配置文件中有一个参数datadir,该参数指定了数据库所在的路径。在Linux操作系统下默认datadir为/usr/local/mysql/data,用户可以修改该参数，当然也可以使用该路径，不过该路径只是一个指向/opt/mysql_data的目录
   mysql体系结构  应用程序通过数据库实例来操作数据库。
   由上图可知，mysql由以下几部分组成：
- 链接吃组件 管理服务和工具组件 SQL接口组件 查询分析器组件 优化器组件 缓冲（Cache）组件 插件式存储引擎 物理文件   从图中还可以发现，MySQL数据库区别于其他数据库的最重要的一一个特点就是其插件式的表存储引擎。MySQL插件式的存储引擎架构提供了一系列标准的管理和服务支持，这些标准与存储引擎本身无关，可能是每个数据库系统本身都必需的，如SQL分析器和优化器等，而存储引擎是底层物理结构的实现，每个存储引擎开发者可以按照自己的意愿来进行开发。
- 需要特别注意的是，存储引擎是基于表的，而不是数据库。
-  mysql存储引擎  存储引擎对于开发人员来说是透明的，但是应该深刻的认识到mysql数据库的核心在于存储引擎。  InnoDB存储引擎  InnoDB存储引擎支持事务，其设计目标主要面向在线事务处理(OLTP)的应用。其特点是行锁设计、支持外键，并支持类似于Oracle的非锁定读，即默认读取操作不会产生锁。从MySQL数据库5.</description>
+ 链接吃组件
+ 管理服务和工具组件
+ SQL接口组件
+ 查询分析器组件
+ 优化器组件
+ 缓冲（Cache）组件
+ 插件式存储引擎
+ 物理文件
+  从图中还可以发现，MySQL数据库区别于其他数据库的最重要的一一个特点就是其插件式的表存储引擎。MySQL插件式的存储引擎架构提供了一系列标准的管理和服务支持，这些标准与存储引擎本身无关，可能是每个数据库系统本身都必需的，如SQL分析器和优化器等，而存储引擎是底层物理结构的实现，每个存储引擎开发者可以按照自己的意愿来进行开发。</description>
     </item>
     
     <item>
