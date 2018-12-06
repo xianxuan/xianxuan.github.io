@@ -363,7 +363,7 @@ sync_ water_ mark = 90% * total_ redo_ log_ file_ size
 </code></pre></li>
 </ul>
 
-<h4 id="innodb1-2-x-kжz-fïj-éj-master-thread">InnoDB1.2.x KЖZ FïJ Éj Master Thread</h4>
+<h4 id="innodb1-2-x版本-master-thread">InnoDB1.2.x版本 Master Thread</h4>
 
 <ul>
 <li><p>InnoDB Plugin (从InnoDB 1.0.x版本开始)提供了参数innodb_io_capacity, 用来表示磁盘IO的吞吐量，默认值为200。对于刷新到磁盘页的数量，会按照innodb_io_capacity的百分比来进行控制。规则如下:</p>
@@ -381,7 +381,7 @@ sync_ water_ mark = 90% * total_ redo_ log_ file_ size
 <li><p>还有一个改变是:之前每次进行fullpurge操作时，最多回收20个Undo页，从InnoDB 1.0.x 版本开始引人了参数innodb_purge_batch_size, 该参数可以控制每次fullpurge回收的Undo页的数量。该参数的默认值为20，并可以动态地对其进行修改。</p></li>
 </ul>
 
-<h4 id="innodb-1-2-x版本的master-thread">InnoDB 1 .2.x版本的Master Thread</h4>
+<h4 id="innodb-1-2-x版本的master-thread">InnoDB 1.2.x版本的Master Thread</h4>
 
 <ul>
 <li>其中srv_ master_ do jidle_ tasks() 就是之前版本中每10秒的操作，srv_ master_ do<em>active</em> tasks() 处理的是之前每秒中的操作。同时对于刷新脏页的操作，从Master Thread线程分离到一个单独的Page Cleaner Thread,从而减轻了Master Thread的工作，同时进一步提高了系统的并发性。
@@ -429,7 +429,7 @@ if InnoDB is idle{
 <li><p>因此Delete Buffer对应UPDATE操作的第一个过程，即将记录标记为删除。PurgeBuffer对应UPDATE操作的第二个过程，即将记录真正的删除。同时，InnoDB存储引擎提供了参数innodb_change_buffering,用来开启各种Buffer的选项。该参数可选的值为: inserts、 deletes、 purges、 changes、 all、 none 。inserts、 deletes、 purges 就是前面讨论过的三种情况。changes 表示启用inserts和deletes, all 表示启用所有，none 表示都不启用。该参数默认值为all.</p></li>
 </ul>
 
-<p>##### Merge Insert Buffer</p>
+<h5 id="merge-insert-buffer">Merge Insert Buffer</h5>
 
 <ul>
 <li><p>概括地说，Merge Insert Buffer的操作可能发生在以下几种情况下:</p>
