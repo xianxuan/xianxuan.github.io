@@ -1,0 +1,389 @@
+<!DOCTYPE HTML>
+
+<!-- 
+Strata by HTML5 UP
+html5up.net | @n33co
+Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>Mysql技术内幕之文件 &middot; </title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="author" content="Your name">
+		<meta name="description" content="Describe your website">
+		<meta http-equiv="content-language" content="en-us" />
+
+		
+		<meta name="og:site_name" content="">
+		<meta name="og:title" content="Mysql技术内幕之文件">
+		<meta name="og:url" content="https://xianxuan.github.io/post/mysql/mysql%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95%E4%B9%8B%E6%96%87%E4%BB%B6/">
+		
+		<meta name="og:image" content="https://xianxuan.github.io/images/avatar.jpg">
+		
+		
+
+		<meta name="generator" content="Hugo 0.46" />
+
+		<!--[if lte IE 8]><script src='https://xianxuan.github.io/js/ie/html5shiv.js'></script><![endif]-->
+		<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+		<link rel="stylesheet" href="https://xianxuan.github.io/css/main.css" />
+		<!--[if lte IE 8]><link rel="stylesheet" href="https://xianxuan.github.io//css/ie8.css"><![endif]-->
+
+		
+		
+	</head>
+
+	<body id="top">
+		<!-- Header -->
+<header id="header">
+	
+	<a href="https://xianxuan.github.io/" class="image avatar"><img src="https://xianxuan.github.io/images/avatar.jpg" alt="" /></a>
+	
+	
+		<h1><strong>I&rsquo;m YangKaiXuan</strong>, a golang Developement Engineer.</h1>
+	
+
+	
+		<nav id="sidebar">
+			<ul>
+			
+				<li><a href="https://xianxuan.github.io/post/">Blog</a></li>
+			
+				<li><a href="https://xianxuan.github.io/">Home</a></li>
+			
+			</ul>
+		</nav>
+	
+</header>
+
+
+		<!-- Main -->
+		<div id="main">
+			
+	<span>
+		<h1>Mysql技术内幕之文件</h1>
+
+		<i class="fa fa-calendar"></i>&nbsp;&nbsp;
+<time datetime="2018-12-06 18:27:20 &#43;0800 CST">2018-12-06</time>&nbsp;&nbsp;
+
+
+
+
+
+
+
+	</span>
+
+	<p>
+	    
+
+<h2 id="参数文件">参数文件</h2>
+
+<ul>
+<li><p>mysql启动的时候会先去读取一个配置参数文件，默认情况下，mysql会按照一定的顺序在指定位置读取，如果在制定位置没有找到mysql架构，那么mysql启动将会失败。</p></li>
+
+<li><p>mysql的参数文件是文本方式存储的</p></li>
+</ul>
+
+<h3 id="什么是参数">什么是参数</h3>
+
+<ul>
+<li>可以把mysql的参数看做键值对，通过show variables 可以查看所有参数.
+<br /></li>
+</ul>
+
+<h3 id="参数类型">参数类型</h3>
+
+<ul>
+<li><p>mysql参数类型分为两类：</p>
+
+<ul>
+<li><p>动态参数</p></li>
+
+<li><p>静态参数</p></li>
+</ul></li>
+
+<li><p>动态参数意味着可以在MySQL实例运行中进行更改，静态参数说明在整个实例生命周期内都不得进行更改，就好像是只读(read only)的。可以通过SET命令对动态的参数值进行修改，SET 的语法如下:</p>
+
+<pre><code>SET
+| [global | session] system_var_name= expr
+| [@@g1obal. | @@session. | @@]system_var_name= expr
+</code></pre></li>
+
+<li><p>这里可以看到global和session关键字，它们表明该参数的修改是基于当前会话还是整个实例的生命周期。有些动态参数只能在会话中进行修改，如autocommit;而有些参数修改完后，在整个实例生命周期中都会生效，如binlog. cache_size ;而有些参数既可以在会话中又可以在整个实例的生命周期内生效，如read_buffer_size。</p></li>
+
+<li><p>这里需要注意的是，对变量的全局值进行了修改，在这次的实例生命周期内都有效，但MySQL实例本身并不会对参数文件中的该值进行修改。也就是说，在下次启动时MySQL实例还是会读取参数文件。若想在数据库实例下&ndash;次启动时该参数还是保留为当前修改的值，那么用户必须去修改参数文件。</p></li>
+
+<li><p>静态变量对其进行修改会报错</p></li>
+</ul>
+
+<h2 id="日志文件">日志文件</h2>
+
+<ul>
+<li><p>日志文件类型</p>
+
+<ul>
+<li><p>错误日志</p></li>
+
+<li><p>二进制日志</p></li>
+
+<li><p>慢查询日志</p></li>
+
+<li><p>查询日志</p></li>
+</ul></li>
+</ul>
+
+<h3 id="错误日志">错误日志</h3>
+
+<ul>
+<li>错误日志文件对MySQL的启动、运行、关闭过程进行了记录。MySQL DBA在遇到问题时应该首先查看该文件以便定位问题。该文件不仅记录了所有的错误信息，也记录一些警告信息或正确的信息。用户可以通过命令SHOW VARIABLES LIKE &lsquo;log error&rsquo; 来定位该文件.</li>
+</ul>
+
+<h3 id="慢查询日志">慢查询日志</h3>
+
+<ul>
+<li><p>参数long_query_time,默认是10;等于这个阈值的不会记录，5.1之后用微秒记录sql运行时间。</p></li>
+
+<li><p>和慢查询有关的参数，log_slow_queries，log_queries_not_using_indexs,log_slow_queries打开才会记录慢查询日志，log_queries_not_using_indexs如果这个参数打开会将没有使用索引的sql记录下来</p></li>
+
+<li><p>5.6.5版本开始新增了log_throttle_queries_not_using_indexes，用来表示每分钟允许记录到slow log的且未使用索引的sql语句次数，改制默认为0，表示没有限制，这会导致slow log文件大小不断增加，可以设置此参数。</p></li>
+
+<li><p>mysqldumpslow 命令可以很好的帮助用户定位到慢查询</p></li>
+
+<li><p>mysql 5.1开始可以将慢查询日志放入一张表中（slow_log）</p></li>
+
+<li><p>参数log_output指定了慢查询输出格式，默认为file，可以设置为table就可以查询slow_log表了</p></li>
+
+<li><p>log_output是全局的并且是动态的，可以在线修改</p></li>
+
+<li><p>InnoSQL版本加强了对于SQL语句的捕获方式。在原版MySQL的基础上在slow_log中增加了对于逻辑读取(logical reads )和物理读取(physical reads) 的统计。这里的物理读取是指从磁盘进行IO读取的次数，逻辑读取包含所有的读取，不管是磁盘还是缓冲池。如果逻辑读取远大于无力度去该sql需要优化</p></li>
+
+<li><p>用户可以通过额外的参数long_query_io将超过指定逻辑I0次数的SQL语句记录到slow log中。该值默认为100，即表示对于逻辑读取次数大于100的SQL语句，记录到slow_log中。而为了兼容原MySQL数据库的运行方式，还添加了参数slow<em>query</em> ype,用来表示启用slow_og的方式，可选值为:</p>
+
+<ul>
+<li><p>0表示不将SQL语句记录到slow log</p></li>
+
+<li><p>1表示根据运行时间将SQL语句记录到slow log</p></li>
+
+<li><p>2表示根据逻辑I0次数将SQL语句记录到slow log</p></li>
+
+<li><p>3表示根据运行时间及逻辑IO次数将SQL语句记录到slow log</p></li>
+</ul></li>
+</ul>
+
+<h3 id="查询日志">查询日志</h3>
+
+<ul>
+<li>查询日志记录了所有对MySQL数据库请求的信息，无论这些请求是否得到了正确的执行。默认文件名为:主机名.log。 通过_上述查询日志会发现，查询日志甚至记录了对Access denied的请求，即对于未能正确执行的SQL语句，查询日志也会进行记录。同样地，从MySQL 5.1开始，可以将查询日志的记录放人mysql架构下的general_log表中，该表的使用方法和前面小节提到的slow_log 基本一样，这里不再赘述。</li>
+</ul>
+
+<h3 id="二进制日志">二进制日志</h3>
+
+<ul>
+<li><p>二进制日志(binary log)记录了对MySQL数据库执行更改的所有操作，但是不包括SELECT和SHOW这类操作，因为这类操作对数据本身并没有修改。然而，若操作本身并没有导致数据库发生变化，那么该操作可能也会写入二进制日志。</p></li>
+
+<li><p>二进制日志有以下几个作用:</p>
+
+<ul>
+<li><p>恢复(recovery): 某些数据的恢复需要二进制日志，例如，在一个数据库全备文件恢复后，用户可以通过二进制日志进行point-in-time的恢复。</p></li>
+
+<li><p>复制(replication) :其原理与恢复类似，通过复制和执行二进制日志使一台 远程的MySQL数据库(一般称为slave或standby)与一台MySQL数据库(一般称为master或primary)进行实时同步。</p></li>
+
+<li><p>审计(audit) :用户可以通过二进制日志中的信息来进行审计，判断是否有对数据库进行注入的攻击。</p></li>
+</ul></li>
+
+<li><p>通过配置参数log-bin [ =name ]可以启动二进制日志。如果不指定name,则默认感”进制日志文件名为主机名，后缀名为二进制日志的序列号，所在路径为数据库所在目录( datadir)。且默认情况是没有启动需要手动指定参数来启动，并且对性能损失十分有限（官方文档表示性能下降1%）</p></li>
+
+<li><p>以下配置文件的参数影响着二进制日志记录的信息和行为：</p>
+
+<ul>
+<li><p>max_binlog_size</p></li>
+
+<li><p>binlog_cache_size</p></li>
+
+<li><p>sync_binlog</p></li>
+
+<li><p>binlog_do_db</p></li>
+
+<li><p>binlog_ignore_db</p></li>
+
+<li><p>log_slave_update</p></li>
+
+<li><p>binlog_format</p></li>
+</ul></li>
+
+<li><p>参数max_binlog_size指定了单个二进制日志文件的最大值，如果超过该值，则产生新的二进制日志文件，后缀名+1,并记录到.index 文件。从MySQL 5.0开始的默认值为1 073 741 824，代表1 G (在之前版本中max_binlog_size 默认大小为1.1G)。</p></li>
+
+<li><p>当使用事务的表存储引擎(如InnoDB存储引擎)时，所有未提交(uncommitted)的二进制日志会被记录到一个缓存中去，等该事务提交(committed)时直接将缓冲中的二进制日志写人二进制日志文件，而该缓冲的大小由binlog_cache_size 决定，默认大小为32K。此外，binlog_cache_size 是基于会话(session) 的，也就是说，当一个线程开始一个事务时，MySQL 会自动分配一个大小为binlog_cache_size 的缓存，因此该值的设置需要相当小心，不能设置过大。当一个事务的记录大于设定的binlog_cache<em>size时，MySQL会把缓冲中的日志写人一个临时文件中，因此该值又不能设得太小。通过SHOW GLOBAL STATUS命令查看binlog</em> cache_ use、binlog_ cache_disk_use 的状态，可以判断当前binlog_cache_size 的设置是否合适。binlog_cache_use 记录了使用缓冲写二进制日志的次数，binlog_cache<em>disk</em> se 记录了使用临时文件写二进制日志的次数。</p></li>
+
+<li><p>在默认情况下，二进制日志并不是在每次写的时候同步到磁盘(用户可以理解为缓冲写)。因此，当数据库所在操作系统发生宕机时，可能会有最后-部分数据没有写人二进制日志文件中，这会给恢复和复制带来问题。参数sync_ binlog= [ N ]表示每写缓冲多少次就同步到磁盘。如果将N设为1,即sync_binlog=1 表示采用同步写磁盘的方式来写二进制日志，这时写操作不使用操作系统的缓冲来写二进制日志。sync_binlog 的默认值为0,如果使用InnoDB存储引擎进行复制，并且想得到最大的高可用性，建议将该值设为ON。不过该值为ON时，确实会对数据库的IO系统带来一定的影响。</p></li>
+
+<li><p>但是，即使将sync_binlog 设为1，还是会有一种情况导致问题的发生。当使用InnoDB存储引擎时，在一个事务发出COMMIT动作之前，由于sync_binlog 为1，因此会将二进制日志立即写人磁盘。如果这时已经写人了二进制日志，但是提交还没有发生，并且此时发生了宕机，那么在MySQL数据库下次启动时，由于COMMIT操作并没有发生，这个事务会被回滚掉。但是二进制日志已经记录了该事务信息，不能被回滚。这个问题可以通过将参数innodb_support_xa设为1来解决，虽然innodb_support_xa与XA事务有关，但它同时也确保了二进制日志和InnoDB存储引擎数据文件的同步。</p></li>
+
+<li><p>参数binlog- do-db和binlog-ignore-db 表示需要写入或忽略写入哪些库的日志。默认为空，表示需要同步所有库的日志到二进制日志。</p></li>
+
+<li><p>如果当前数据库是复制中的slave角色，则它不会将从master取得并执行的二进制日志写人自己的二进制日志文件中去。如果需要写人，要设置log-slave-update。如果需要搭建master= =&gt;slave= =&gt;slave架构的复制，则必须设置该参数。</p></li>
+
+<li><p>MySQL5.1开始引入了binlog_format参数，该参数可设的值有STATEMENT、ROW和MIXED。</p>
+
+<ul>
+<li><p>STATEMENT格式和之前的MySQL版本一样， 二进制日志文件记录的是日志的逻辑SQL语句。</p></li>
+
+<li><p>在ROw格式下，二进制日志记录的不再是简单的SQL语句了，而是记录表的行更改情况。基于ROW格式的复制类似于Oracle的物理Standby(当然，还是有些区别)。同时，对上述提及的Statement格式下复制的问题予以解决。从MySQL5.1版本开始，如果设置了binlog_format为ROW，可以将InnoDB的事务隔离基本设为READCOMMITTED,以获得更好的并发性。</p></li>
+
+<li><p>在MIXED格式下，MySQL默认采用STATEMENT格式进行二进制日志文件的记录，但是在&ndash;些情况下会使用ROW格式，可能的情况有:</p>
+
+<ul>
+<li><p>表的存储引擎为NDB,这时对表的DML操作都会以ROW格式记录。</p></li>
+
+<li><p>使用了UUID()、USER()、 CURRENT_USER()、FOUND_ROWS()、ROW_COUNT()等不确定函数。</p></li>
+
+<li><p>使用了INSERT DELAY语句。</p></li>
+
+<li><p>使用了用户定义函数(UDF)。</p></li>
+
+<li><p>使用了临时表( temporary table)。</p></li>
+</ul></li>
+</ul></li>
+
+<li><p>Blockhole 不支持row格式NDB不支持Statement格式</p></li>
+
+<li><p>binlog_format是动态参数可以在运行时修改但是要确保更改之后不会对复制带来影响</p></li>
+
+<li><p>通常情况下设置为ROW保证可靠性但是会带来二进制文件的增加，并增大了网络开销。</p></li>
+
+<li><p>binlog不能通过cat head  tail等命令查看需要通过mysqlbinlog,如果是ROW类型加上-v或者-vv</p></li>
+</ul>
+
+<h2 id="套接字文件">套接字文件</h2>
+
+<ul>
+<li>在UNIX系统下本地连接MySQL可以采用UNIX域套接字方式，这种方式需要一个套接字(socket) 文件。套接字文件可由参数socket控制。一般在/tmp目录下，名为mysql.sock。</li>
+</ul>
+
+<h2 id="pid文件">pid文件</h2>
+
+<ul>
+<li>当MySQL实例启动时，会将自己的进程ID写人一个文件中一该文件即为pid文件。该文件可由参数pid_file 控制，默认位于数据库目录下，文件名为主机名.pid。</li>
+</ul>
+
+<h2 id="表结构定义文件">表结构定义文件</h2>
+
+<ul>
+<li><p>因为MySQL插件式存储引擎的体系结构的关系，MySQL 数据的存储是根据表进行的，每个表都会有与之对应的文件。但不论表采用何种存储弓|擎，MySQL都有一一个以frm为后缀名的文件，这个文件记录了该表的表结构定义。</p></li>
+
+<li><p>frm还用来存放视图的定义，如用户创建了一个v<em>a视图，那么对应地会产生一个v</em> a.frm 文件，用来记录视图的定义，该文件是文本文件，可以直接使用cat命令进行查看</p></li>
+</ul>
+
+<h2 id="innodn存储引擎文件">InnoDN存储引擎文件</h2>
+
+<h3 id="表空间文件">表空间文件</h3>
+
+<ul>
+<li><p>InnoDB采用将存储的数据按表空间(tablespace)进行存放的设计。在默认配置下会有&ndash;个初始大小为10MB,名为ibdata1的文件。该文件就是默认的表空间文件(tablespace file),用户可以通过参数innodb_ data_ fle_ path 对其进行设置，格式如下:</p>
+
+<pre><code>innodb_ data_ file_ path=da tafile_ spec1 {;datafile_ spec2]...
+</code></pre></li>
+
+<li><p>用户可以通过多个文件组成一个表空间，同时指定文件的属性。如：</p>
+
+<pre><code>[mysqld]
+innodb_ data_ file_ path = /db/ ibdatal :2000M; /dr2/ db/ ibdata2 : 2000M: autoextend
+</code></pre></li>
+
+<li><p>这里将/db/ibdata1 和/dr2/db/ibdata2两个文件用来组成表空间。若这两个文件位于不同的磁盘上，磁盘的负载可能被平均，因此可以提高数据库的整体性能。同时，两个文件的文件名后都跟了属性，表示文件idbdatal的大小为2000MB，文件ibdata2的大小为2000MB，如果用完了这2000MB，该文件可以自动增长(autoextend)。</p></li>
+
+<li><p>设置innodb_data_file_path参数后，所有基于InnoDB存储引擎的表的数据都会记录到该共享表空间中。若设置了参数innodb_file_per_table, 则用户可以将每个基于InnoDB存储引擎的表产生一一个独立表空间。独立表空间的命名规则为:表名.ibd。通过这样的方式，用户不用将所有数据都存放于默认的表空间中。</p></li>
+
+<li><p>独立表空间仅存储该表的数据、索引和插入缓冲BITMAP等信息，其余信息还是存储在共享表空间中。</p></li>
+</ul>
+
+<h3 id="重做日志文件">重做日志文件</h3>
+
+<ul>
+<li><p>默认情况在InnoDB数据目录下ib_logfile0和ib_logfile1,记录了InnoDB的事务日志。</p></li>
+
+<li><p>每个InnoDB至少有1个重做日志文件组（group），每个文件组下至少有2个重做日志文件。为了得到更高的可靠性，可以设置多个镜像日志组，并放在不通的磁盘上，提高其可用性。日志组的每个重做日志文件大小一致，并以循环写入的方式运行。InnoDB 存储引擎先写重做日志文件1,当达到文件的最后时会切换至重做日志文件2，再当重做日志文件2也被写满时，会再切换到重做日志文件1中。下列参数影响着重做日志文件的属性:</p>
+
+<ul>
+<li><p>innodb_log_file_size</p></li>
+
+<li><p>innodb_log_files_in_group</p></li>
+
+<li><p>innodb_mirored_log_groups</p></li>
+
+<li><p>innodb_log_group_home_dir</p></li>
+</ul></li>
+
+<li><p>参数innodb_log_file_size 指定每个重做日志文件的大小。在InnoDB1.2.x版本之前,重做日志文件总的大小不得大于等于4GB，而1.2.x版本将该限制扩大为了512GB。</p></li>
+
+<li><p>参数innodb_log_files_in_group 指定了日志文件组中重做日志文件的数量，默认为2。参数innodb_mirrored_log_groups指定了日志镜像文件组的数量，默认为1，表示只有一个日志文件组，没有镜像。若磁盘本身已经做了高可用的方案，如磁盘阵列，那么可以不开启重做日志镜像的功能。最后，参数innodb_log_group_home_dir 指定了日志文件组所在路径，默认为./,表示在MySQL数据库的数据目录下。</p></li>
+
+<li><p>重做日志文件的大小设置对于InnoDB存储引擎的性能有着非常大的影响。一方面重做日志文件不能设置得太大，如果设置得很大，在恢复时可能需要很长的时间;另一方面又不能设置得太小了，否则可能导致-一个事务的日志需要多次切换重做日志文件。此外，重做日志文件太小会导致频繁地发生asynccheckpoint,导致性能的抖动。</p></li>
+
+<li><p>二进制日志和重做日志的区别：</p>
+
+<ul>
+<li><p>首先，二进制日志会记录所有与MySQL数据库有关的日志记录，包括InnoDB、MyISAM、Heap 等其他存储引擎的日志。而InnoDB存储引擎的重做日志只记录有关该存储引擎本身的事务日志。</p></li>
+
+<li><p>其次，记录的内容不同，无论用户将二进制日志文件记录的格式设为STATEMENT还是ROW,又或者是MIXED,其记录的都是关于&ndash;个事务的具体操作内容，即该日志是逻辑日志。而InnoDB存储引擎的重做日志文件记录的是关于每个页(Page) 的更改的物理情况。</p></li>
+
+<li><p>此外，写人的时间也不同，二进制日志文件仅在事务提交前进行提交，即只写磁盘一次，不论这时该事务多大。而在事务进行的过程中，却不断有重做日志条目(redo entry)被写人到重做日志文件中。</p></li>
+</ul></li>
+
+<li><p>重做日志缓冲往磁盘写入的时候是按照512个字节也就是一个扇区大小进行写入的，因为扇区是写入的最小单位，因此可以保证写入必定是成功的，因此重做日志的写入过程不需要doublewrite</p></li>
+
+<li><p>主线程中每秒会将重做日志缓冲写人磁盘的重做日志文件中，不论事务是否已经提交。另一个触发写磁盘的过程是由参数innodb_fush_log_at_trx_commit控制，表示在提交(commit) 操作时，处理重做日志的方式。</p></li>
+
+<li><p>参数innodb_fush_log_at_tx_commit 的有效值有0、1、 2。 0代表当提交事务时并参数innodb_fush_log_at_tx_commit 的有效值有0、1、 2。 0代表当提交事务时并不将事务的重做日志写人磁盘上的日志文件，而是等待主线程每秒的刷新。1和2不同的地方在于:1表示在执行commit时将重做日志缓冲同步写到磁盘，即伴有fsync的调用。2表示将重做日志异步写到磁盘，即写到文件系统的缓存中。因此不能完全保证在执行commit时肯定会写人重做日志文件，只是有这个动作发生。</p></li>
+
+<li><p>因此为了保证事务的ACID中的持久性，必须将innodb_fush_log_at<em>trx</em> commit 设置为1,也就是每当有事务提交时，就必须确保事务都已经写人重做日志文件。那么当数据库因为意外发生宕机时，可以通过重做日志文件恢复，并保证可以恢复已经提交的事务。而将重做日志文件设置为0或2,都有可能发生恢复时部分事务的丟失。不同之处在于，设置为2时，当MySQL数据库发生宕机而操作系统及服务器并没有发生宕机时，由于此时未写入磁盘的事务日志保存在文件系统缓存中，当恢复时同样能保证数据不丢失。</p></li>
+</ul>
+
+	</p>
+
+	
+
+		</div>
+
+		<!-- Footer -->
+<footer id="footer">
+	<ul class="icons">
+		
+		
+		
+		
+		<li><a href="//github.com/xianxuan" target="_blank" class="icon fa-github"><span class="label">GitHub</span></a></li>
+		
+		
+		
+		
+		
+		
+		<li><a href="https://xianxuan.github.io/#contact-form" class="icon fa-envelope-o"><span class="label">Email</span></a></li>
+		
+		
+		<li><a href="https://xianxuan.github.io/index.xml" class="icon fa-rss" type="application/rss+xml"><span class="label">RSS</span></a></li>
+		
+	</ul>
+
+	<ul class="copyright">
+		
+	</ul>
+</footer>
+
+<!-- Scripts -->
+<script src="https://xianxuan.github.io/js/jquery.min.js"></script>
+<script src="https://xianxuan.github.io/js/jquery.poptrox.min.js"></script>
+<script src="https://xianxuan.github.io/js/skel.min.js"></script>
+<script src="https://xianxuan.github.io/js/util.js"></script>
+
+<script src="https://xianxuan.github.io/js/main.js"></script>
+
+
+
+
+
+	</body>
+</html>
