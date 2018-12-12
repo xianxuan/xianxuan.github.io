@@ -1,0 +1,206 @@
+<!DOCTYPE HTML>
+
+<!-- 
+Strata by HTML5 UP
+html5up.net | @n33co
+Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>Mysql技术内幕之表 &middot; </title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="author" content="Your name">
+		<meta name="description" content="Describe your website">
+		<meta http-equiv="content-language" content="en-us" />
+
+		
+		<meta name="og:site_name" content="">
+		<meta name="og:title" content="Mysql技术内幕之表">
+		<meta name="og:url" content="https://xianxuan.github.io/post/mysql/mysql%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95%E4%B9%8B%E8%A1%A8/">
+		
+		<meta name="og:image" content="https://xianxuan.github.io/images/avatar.jpg">
+		
+		
+
+		<meta name="generator" content="Hugo 0.46" />
+
+		<!--[if lte IE 8]><script src='https://xianxuan.github.io/js/ie/html5shiv.js'></script><![endif]-->
+		<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+		<link rel="stylesheet" href="https://xianxuan.github.io/css/main.css" />
+		<!--[if lte IE 8]><link rel="stylesheet" href="https://xianxuan.github.io//css/ie8.css"><![endif]-->
+
+		
+		
+	</head>
+
+	<body id="top">
+		<!-- Header -->
+<header id="header">
+	
+	<a href="https://xianxuan.github.io/" class="image avatar"><img src="https://xianxuan.github.io/images/avatar.jpg" alt="" /></a>
+	
+	
+		<h1><strong>I&rsquo;m YangKaiXuan</strong>, a golang Developement Engineer.</h1>
+	
+
+	
+		<nav id="sidebar">
+			<ul>
+			
+				<li><a href="https://xianxuan.github.io/post/">Blog</a></li>
+			
+				<li><a href="https://xianxuan.github.io/">Home</a></li>
+			
+			</ul>
+		</nav>
+	
+</header>
+
+
+		<!-- Main -->
+		<div id="main">
+			
+	<span>
+		<h1>Mysql技术内幕之表</h1>
+
+		<i class="fa fa-calendar"></i>&nbsp;&nbsp;
+<time datetime="2018-12-10 13:26:06 &#43;0800 CST">2018-12-10</time>&nbsp;&nbsp;
+
+
+
+
+
+
+
+	</span>
+
+	<p>
+	    
+
+<h2 id="索引组织表">索引组织表</h2>
+
+<ul>
+<li><p>在InnoDB存储引擎中，表都是根据主键顺序组织存放的，这种存储方式的表称为索引组织表(indexorganizedtable).在InnoDB存储引擎表中，每张表都有个主键(Primary Key),如果在创建表时没有显式地定义主键，则InnoDB存储引擎会按如下方式选择或创建主键:</p>
+
+<ul>
+<li><p>首先判断表中是否有非空的唯&ndash;索引(UniqueNOTNULL),如果有，则该列即为主键。</p></li>
+
+<li><p>如果不符合上述条件，InnoDB 存储引擎自动创建-一个6字节大小的指针。</p></li>
+</ul></li>
+
+<li><p>当表中有多个非空唯一索引时， InnoDB 存储引擎将选择建表时第一个定义的非空唯一索引为主键。这里需要非常注意的是，主键的选择根据的是定义索引的顺序，而不是建表时列的顺序。首先定义为唯一索引的字段。</p></li>
+
+<li><p>mysql 可以通过_rowid显示表的主键。但是只能用来查看单个列为主键的情况，对于多列组成的主键就显得无能为力了。</p></li>
+</ul>
+
+<h2 id="innodb-逻辑存储结构">InnoDB 逻辑存储结构</h2>
+
+<ul>
+<li>表空间（所有数据）-&gt; 段 -&gt; 区 -&gt; 页（或者块）
+<br /></li>
+</ul>
+
+<h3 id="表空间">表空间</h3>
+
+<ul>
+<li>表空间是InnoDB存储引擎逻辑结构的最高层，如果用户启用了innodb_file_per_table 每张表内的数据单独的放到一个表空间内，但是只存放数据、索引和插入缓冲Bitmap页，其他类的数据，如回滚信息，插入缓冲索引页，系统时无信息，二次写缓冲等还是存放在原来的共享表空间内。
+<br /></li>
+</ul>
+
+<h3 id="段">段</h3>
+
+<ul>
+<li>常见的段有数据段、索引段、回滚段等。InnoDB存储引擎表是索引组织的(index organized)，因此数据即索引，索引即数据。那么数据段即为B+树的叶子节点, 索引段即为B+树的非叶子节点。</li>
+</ul>
+
+<h3 id="区">区</h3>
+
+<ul>
+<li><p>区是由连续页组成的空间，在任何情况下每个区的大小都为1MB。为了保证区中页的连续性，InnoDB 存储引擎-次从磁盘申请4 ~ 5个区。在默认情况下，InoDB存储引擎页的大小为16KB，即-一个区中- -共有64个连续的页。</p></li>
+
+<li><p>InnoDB 1.0.x 版本开始引人压缩页，即每个页的大小可以通过参数KEY_BLOCK_SIZE设置为2K、4K、8K，因此每个区对应页的数量就应该为512、256、128。</p></li>
+
+<li><p>InnoDB 1.2.x 版本新增了参数innodb_ page_ size, 通过该参数可以将默认页的大小设置为4K、8K,但是页中的数据库不是压缩。这时区中页的数量同样也为256、128。总之，不论页的大小怎么变化，区的大小总是为1M。</p></li>
+
+<li><p>在用户启用了参数innodb_file_per_talbe 后，创建的表默认大小是96KB。这是因为在每个段开始时，先用32个页大小的碎片页( fragment page)来存放数据，在使用完这些页之后才是64个连续页的申请。这样做的目的是，对于- -些小表，或者是undo这类的段，可以在开始时申请较少的空间，节省磁盘容量的开销。</p></li>
+</ul>
+
+<h3 id="页">页</h3>
+
+<ul>
+<li><p>同大多数数据库一样，InnoDB 有页(Page) 的概念(也可以称为块)，页是InnoDB磁盘管理的最小单位。在InnoDB存储引擎中，默认每个页的大小为16KB。而从InnoDB1.2.x版本开始，可以通过参数innodb_page_size将页的大小设置为4K、8K、16K。若设置完成，则所有表中页的大小都为innodb_page_size, 不可以对其再次进行修改。除非通过mysqldump导人和导出操作来产生新的库。</p></li>
+
+<li><p>在InnoDB存储引擎中，常见的页类型有:</p>
+
+<ul>
+<li><p>数据页(B-tree Node)</p></li>
+
+<li><p>undo页(undo Log Page)</p></li>
+
+<li><p>系统页(System Page)</p></li>
+
+<li><p>事务数据页(Transaction system Page)</p></li>
+
+<li><p>插入缓冲位图页(Insert Buffer Bitmap)</p></li>
+
+<li><p>插人缓冲空闲列表页(Insert Buffer Free List)</p></li>
+
+<li><p>未压缩的二进制大对象页(Uncompressed BLOB Page)</p></li>
+
+<li><p>压缩的二进制大对象页(compressed BLOB Page)</p></li>
+</ul></li>
+</ul>
+
+<h3 id="行">行</h3>
+
+<ul>
+<li>InnoDB存储引擎是面向列的(row-oriented), 也就说数据是按行进行存放的。每个页存放的行记录也是有硬性定义的，最多允许存放16KB/ 2 -200行的记录，即7992行记录。这里提到了row-oriented的数据库，也就是说，存在有column-oriented的数据库。MySQL infobright存储引擎就是按列来存放数据的，这对于数据仓库下的分析类SQL语句的执行及数据压缩非常有帮助。</li>
+</ul>
+
+	</p>
+
+	
+
+		</div>
+
+		<!-- Footer -->
+<footer id="footer">
+	<ul class="icons">
+		
+		
+		
+		
+		<li><a href="//github.com/xianxuan" target="_blank" class="icon fa-github"><span class="label">GitHub</span></a></li>
+		
+		
+		
+		
+		
+		
+		<li><a href="https://xianxuan.github.io/#contact-form" class="icon fa-envelope-o"><span class="label">Email</span></a></li>
+		
+		
+		<li><a href="https://xianxuan.github.io/index.xml" class="icon fa-rss" type="application/rss+xml"><span class="label">RSS</span></a></li>
+		
+	</ul>
+
+	<ul class="copyright">
+		
+	</ul>
+</footer>
+
+<!-- Scripts -->
+<script src="https://xianxuan.github.io/js/jquery.min.js"></script>
+<script src="https://xianxuan.github.io/js/jquery.poptrox.min.js"></script>
+<script src="https://xianxuan.github.io/js/skel.min.js"></script>
+<script src="https://xianxuan.github.io/js/util.js"></script>
+
+<script src="https://xianxuan.github.io/js/main.js"></script>
+
+
+
+
+
+	</body>
+</html>
