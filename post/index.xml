@@ -6,10 +6,70 @@
     <description>Recent content in Posts on </description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 12 Dec 2018 19:10:32 +0800</lastBuildDate>
+    <lastBuildDate>Mon, 07 Jan 2019 18:00:07 +0800</lastBuildDate>
     
 	<atom:link href="https://xianxuan.github.io/post/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>高性能mysql</title>
+      <link>https://xianxuan.github.io/post/mysql/%E9%AB%98%E6%80%A7%E8%83%BDmysql/</link>
+      <pubDate>Mon, 07 Jan 2019 18:00:07 +0800</pubDate>
+      
+      <guid>https://xianxuan.github.io/post/mysql/%E9%AB%98%E6%80%A7%E8%83%BDmysql/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Mysql技术内幕之事务</title>
+      <link>https://xianxuan.github.io/post/mysql/mysql%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95%E4%B9%8B%E4%BA%8B%E5%8A%A1/</link>
+      <pubDate>Fri, 04 Jan 2019 15:22:44 +0800</pubDate>
+      
+      <guid>https://xianxuan.github.io/post/mysql/mysql%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95%E4%B9%8B%E4%BA%8B%E5%8A%A1/</guid>
+      <description>认识事务  ACID特性：
+ 原子性（atomicity）
+ 一致性（consistency）
+ 隔离性（isolation）
+ 持久性（durability）
+  事务类型：
+ 扁平事务( Flat Transactions )
+ 带有保存点的扁平事务( Flat Transactions with Savepoints)
+ 链事务(Chained Transactions )
+ 嵌套事务( Nested Transactions )
+ 分布式事务(Distributed Transactions)
+   事务的实现  原子性、-致性、持久性通过数据库的redo log和undo log来完成。redo log称为重做日志，用来保证事务的原子性和持久性。undo log用来保证事务的一致性。
+ redo和undo的作用都可以视为是一种恢复操作，redo恢复提交事务修改的页操作，而undo回滚行记录到某个特定版本。因此两者记录的内容不同，redo通常是物理日志，记录的是页的物理修改操作。undo 是逻辑日志，根据每行记录进行记录。
+  redo 基本概念  重做日志用来实现事务的持久性，即事务ACID中的D。其由两部分组成:一种是内存中的重做日志缓冲(redo log buffer),其是易失的;二是重做日志文件( redo log file),其是持久的。
+ InnoDB是事务的存储引擎，其通过ForceLogatCommit机制实现事务的持久性，即当事务提交(COMMIT)时，必须先将该事务的所有日志写人到重做日志文件进行持久化，待事务的COMMIT操作完成才算完成。这里的日志是指重做日志，在InnoDB存储引擎中，由两部分组成，即redo log和undo log。redo log用来保证事务的持久性，undolog用来帮助事务回滚及MVCC的功能。redo log基本上都是顺序写的，在数据库运行时不需要对redolog的文件进行读取操作。而undo log是需要进行随机读写的。
+ 为了确保每次日志都写人重做日志文件，在每次将重做日志缓冲写入重做日志文件后，InnoDB存储引擎都需要调用一次fsync操作。由于重做日志文件打开并没有使用O_DIRECT选项，因此重做日志缓冲先写入文件系统缓存。为了确保重做日志写入磁盘，必须进行&amp;ndash;次fsync操作。由于fsync的效率取决于磁盘的性能，因此磁盘的性能决定了事务提交的性能，也就是数据库的性能。</description>
+    </item>
+    
+    <item>
+      <title>Mysql技术内幕之锁</title>
+      <link>https://xianxuan.github.io/post/mysql/mysql%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95%E4%B9%8B%E9%94%81/</link>
+      <pubDate>Fri, 21 Dec 2018 18:33:08 +0800</pubDate>
+      
+      <guid>https://xianxuan.github.io/post/mysql/mysql%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95%E4%B9%8B%E9%94%81/</guid>
+      <description>lock与latch  latch一般称为闩锁(轻量级的锁)，因为其要求锁定的时间必须非常短。若持续的时间长，则应用的性能会非常差。在InnoDB存储引擎中, latch 又可以分为mutex (互斥量)和rwlock(读写锁)。其目的是用来保证并发线程操作临界资源的正确性，并且通常没有死锁检测的机制。
+ 对象：线程
+ 保护：内存数据结构
+ 持续时间：临界资源
+ 模式：读写锁、互斥量
+ 死锁：无死锁检测机制。仅通过应用程序加锁的顺序保证无死锁的情况发生
+ 存在于：每个数据结构的对象
+  lock的对象是事务，用来锁定的是数据库中的对象，如表、页、行。并且一般lock的对象仅在事务commit或rollback后进行释放(不同事务隔离级别释放的时间可能不同)。此外，lock， 正如在大多数数据库中- -样，是有死锁机制的。
+ 对象：事务
+ 保护：数据库内容
+ 持续时间：整个事务过程
+ 模式：行锁、表锁、意向锁。
+ 死锁：通过waits-for graph、time out等机制进行死锁检测与处理
+ 存在于：Lock Manager的哈希表中
+  InnoDB 中latch可以通过 SHOW ENGINE INNODB MUTEX进行查看，lock可以通过命令SHOW ENGINE INNODB STATUS及information schema 架构下的表INNODB_TRX、INNODB_LOCKS、INNODB_LOCK_WAITS 来观察锁的信息。
+  InnoDB存储引擎中的锁 锁的类型  InnoDB存储引擎实现了如下两种标准的行级锁:
+ 共享锁(S Lock),允许事务读- -行数据。
+ 排他锁(X Lock),允许事务删除或更新-一行数据。
+  X锁与任何的锁都不兼容，而S锁仅和S锁兼容。需要特别注意的是，S和X锁都是行锁,兼容是指对同- -记录(row) 锁的兼容性情况。</description>
+    </item>
     
     <item>
       <title>Mysql技术内幕之索引与算法</title>
@@ -17,7 +77,24 @@
       <pubDate>Wed, 12 Dec 2018 19:10:32 +0800</pubDate>
       
       <guid>https://xianxuan.github.io/post/mysql/mysql%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95%E4%B9%8B%E7%B4%A2%E5%BC%95%E4%B8%8E%E7%AE%97%E6%B3%95/</guid>
-      <description></description>
+      <description>InnoDB 存储引擎索引概述  InnoDB 存储引擎支持以下索引：
+ B+ 树索引
+ 全文索引
+ 哈希索引
+  InnoDB 存储引擎的哈希索引是自适应的，会根据表使用的具体情况自动生成哈希索引，不能人为干预生成。
+ B+树索引就是传统意义上的索引，这是目前关系型数据库系统中查找最为常用和最为有效的索引。B+树索引的构造类似于二叉树，根据键值(Key Value)快速找到数据。
+ 注：B+树中的B不是代表二叉(binary)， 而是代表平衡(balance), 因为B+树是从最早的平衡二叉树演化而来，但是B+树不是一个二叉树。
+ B+树索引并不能找到一个给定键值的具体行。B+树索引能找到的只是被查找数据行所在的页。然后数据库通过把页读人到内存，再在内存中进行查找，最后得到要查找的数据。
+  数据结构与算法 二分查找法  每页Page Directory中的槽是按照主键的顺序存放的，对于某一条具体记录的查询是通过对Page Directory进行二分查找得到的。  二叉查找树和平衡二叉树  B+树是通过二叉查找树，再由平衡二叉树，B树演化而来。
+ 在二叉查找树中,左子树的键值总是小于根的键值，右子树的键值总是大于根的键值。
+ 平衡二叉树的定义如下:首先符合二叉查找树的定义,其次必须满足任何节点的两个子树的高度最大差为1。
+ 维护一个平衡二叉树需要进行更新操作，是有一定开销的。
+  B+ 树  B+树: B+ 树是为磁盘或其他直接存取辅助设备设计的&amp;ndash;种平衡查找树。在B+树中，所有记录节点都是按键值的大小顺序存放在同-层的叶子节点上，由各叶子节点指针进行连接。
+ B+树插入规则：
+ Leaf Page不满，Index Page 不满 直接将记录插入到叶子节点。
+ Leaf Page满，Index Page 不满
+ 拆分Leaf Page
+ 将中间的节点放入到Index Page中</description>
     </item>
     
     <item>
