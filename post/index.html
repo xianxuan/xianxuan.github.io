@@ -70,6 +70,37 @@ Free for personal and commercial use under the CCA 3.0 license (html5up.net/lice
     
         <span>
     <h1>
+        <a href="https://xianxuan.github.io/post/redis/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0%E4%B9%8B%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E5%AF%B9%E8%B1%A1/">Redis设计与实现之数据结构域对象</a>
+    </h1>
+
+    <i class="fa fa-calendar"></i>&nbsp;&nbsp;
+<time datetime="2019-01-10 14:18:01 &#43;0800 CST">2019-01-10</time>&nbsp;&nbsp;
+
+
+
+
+
+
+
+</span>
+
+<p>简单动态字符串  Redis没有直接使用C语言传统的字符串表示(以空字符结尾的字符数组，以下简称C 字符串)，而是自己构建了一种名为简单动态字符串( simple dynamic string, SDS )的抽象类型，并将SDS用作Redis的默认字符串表示。
+ 在Redis里面，C字符串只会作为字符串字面量( string literal) 用在一些无须对字符串值进行修改的地方，比如打印日志.
+ Redis的键和值都是SDS，除了用来保存字符串值歪，还被用作缓冲区（Buffer）：AOF模块中的AOF缓冲区，以及客户端状态中的输人缓冲区,都是由SDS实现的.
+  SDS 的定义  每个sds . h/ sdshdr结构表示-一个SDS值:
+struct sdshdr { //记录buf数组中已使用字节的数量 //等于SDS所保存字符串的长度 int len; //记录buf数组中未使用宇节的数量 int free; //字节数组，用于保存字符串 char buf[] ; };   free属性的值为0,表示这个SDS没有分配任何未使用空间。
+ len属性的值为5,表示这个SDS保存了一个五字节长的字符串。
+ buf属性是-个char类型的数组.
+  SDS遵循C字符串以空字符结尾的惯例，保存空字符的1字节空间不计算在SDS的len属性里面，并且为空字符分配额外的1字节空间，以及添加空字符到字符串末尾等操作，都是由SDS函数自动完成的,所以这个空字符对于SDS的使用者来说是完全透明的。遵循空字符结尾这一. 惯例的好处是，SDS 可以直接重用一部分C字符串函数库里面的函数。
+  SDS 与 C 字符串的区别  根据传统，C语言使用长度为N+1的字符数组来表示长度为N的字符串,并且字符数组的最后-一个元素总是空字符&rsquo;\0&rsquo;。
+ 但是C语言这种简单的字符串表示方式并不能满足Redis对字符串的安全性、效率以及功能方面的要求。
+  常数复杂度获取字符串长度  因为C字符串并环记录自身的长度信息，所以为了获取-个C字符串的长度，程序必须遍历整个字符串，对遇到的每个字符进行计数，直到遇到代表字符串结尾的空字符为止，这个操作的复杂度为0(N)。
+ 和C字符串不同，因为SDS在len属性中记录了SDS本身的长度，所以获取一个SDS长度的复杂度仅为0(1)。</p>
+<hr>
+
+    
+        <span>
+    <h1>
         <a href="https://xianxuan.github.io/post/mysql/%E9%AB%98%E6%80%A7%E8%83%BDmysql/">高性能mysql</a>
     </h1>
 
@@ -84,7 +115,23 @@ Free for personal and commercial use under the CCA 3.0 license (html5up.net/lice
 
 </span>
 
-<p></p>
+<p>事务 在事务中混合使用存储引擎  MySQL服务器层不管理事务，事务是由下层的存储引擎实现的。所以在同一个事务中，使用多种存储引擎是不可靠的。
+ 如果在事务中混合使用了事务型和非事务型的表(例如InnoDB和MyISAM表)，在正常提交的情况下不会有什么问题。
+ 但如果该事务需要回滚，非事务型的表上的变更就无法撤销，这会导致数据库处于不一致的状态，这种情况很难修复，事务的最终结果将无法确定。所以，为每张表选择合适的存储引擎非常重要。
+ 在非事务型的表上执行事务相关操作的时候，MySQL通常不会发出提醒，也不会报错。有时候只有回滚的时候才会发出一个警告:“某些非事务型的表上的变更不能被回滚”。但大多数情况下，对非事务型表的操作都不会有提示。
+  隐式和显式锁定  InnoDB采用的是两阶段锁定协议(two-phase locking protocol)。在事务执行过程中，随时都可以执行锁定，锁只有在执行COMMIT或者ROLLBACK的时候才会释放，并且所有的锁是在同一时刻被释放。前面描述的锁定都是隐式锁定，InnoDB会根据隔离级别在需要的时候自动加锁。
+ 另外，InnoDB也支持通过特定的语句进行显式锁定，这些语句不属于SQL规范生:
+ select &hellip; lock in share mode
+ select &hellip; for update
+  MySQL 也支持L0CK TABLES 和UNLOCK TABLES 语句，这是在服务器层实现的，和存储引擎无关。它们有自己的用途，但并不能替代事务处理。如果应用需要用到事务，还是应该选择事务型存储引擎。(注：尽量的不要显示的使用lock table)
+  多版本并发控制  InnoDB的MVCC,是通过在每行记录后面保存两个隐藏的列来实现的。这两个列，一个保存了行的创建时间，一个保存行的过期时间(或删除时间)。当然存储的并不是实际的时间值，而是系统版本号(system version number)。 每开始一个新的事务，系统版际的时间值，而是系统版本号(system version number)。 每开始一-个新的事务，系统版每行记录的版本号进行比较。下面看一下在REPEATABLE READ 隔离级别下，MVCC具体是如何操作的。
+ SELECT（InnoDB会根据以下两个条件检查每行记录:）
+ a.InnoDB只查找版本早于当前事务版本的数据行(也就是，行的系统版本号小，于或等于事务的系统版本号),这样可以确保事务读取的行，要么是在事务开始前已经存在的，要么是事务自身插入或者修改过的。
+ b.行的删除版本要么未定义，要么大于当前事务版本号。这可以确保事务读取到的行，在事务开始之前未被删除。
+ 只有符合上述两个条件的记录，才能返回作为查询结果。
+  INSERT
+ InnoDB为新插入的每&ndash;行保存当前系统版本号作为行版本号。  DELETE
+ InnoDB为删除的每一行保存 当前系统版本号作为行删除标识。  UPDATE</p>
 <hr>
 
     
@@ -349,28 +396,18 @@ SET | [global | session] system_var_name= expr | [@@g1obal. | @@session. | @@]sy
 <hr>
 
     
-        <span>
-    <h1>
-        <a href="https://xianxuan.github.io/post/foo/">Foo</a>
-    </h1>
 
-    <i class="fa fa-calendar"></i>&nbsp;&nbsp;
-<time datetime="2018-08-03 14:31:24 &#43;0800 CST">2018-08-03</time>&nbsp;&nbsp;
-
-
-
-
-
-
-
-</span>
-
-<p></p>
-<hr>
+    
+    
 
     
 
     
+        <a class="button" rel="next" href="https://xianxuan.github.io//post/page/2/">
+            Older »
+        </a>
+    
+
 
 
 		</div>
